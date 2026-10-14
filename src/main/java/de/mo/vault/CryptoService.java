@@ -18,7 +18,11 @@ public class CryptoService {
     public static final int TAG_LENGTH = 16;        // Bytes
     private static final int TAG_LENGTH_BITS = 128;     // Länge der Manipulationsprüfung
 
-    public static byte[] encrypt(String plaintext, SecretKey key) throws GeneralSecurityException{
+    public static final int SALT_LENGTH = 16;        // Bytes
+    private static final int ITERATIONS = 600_000;
+    private static final int KEY_LENGTH_BITS = 256;
+
+    public static byte[] encrypt(String plaintext, SecretKey key) throws GeneralSecurityException {
 
         byte[] nonce = new byte[NONCE_LENGTH];
         new SecureRandom().nextBytes(nonce);
@@ -47,9 +51,6 @@ public class CryptoService {
 
         return new String(plaintext, StandardCharsets.UTF_8);
     }
-    public static final int SALT_LENGTH = 16;        // Bytes
-    private static final int ITERATIONS = 600_000;
-    private static final int KEY_LENGTH_BITS = 256;
 
     /**
      * Leitet aus Master-Passwort und Salt einen AES-Schlüssel ab (PBKDF2)
@@ -73,6 +74,8 @@ public class CryptoService {
         byte[] salt = new byte[SALT_LENGTH];
         new SecureRandom().nextBytes(salt);
         return salt;
+
+
     }
 
 }
