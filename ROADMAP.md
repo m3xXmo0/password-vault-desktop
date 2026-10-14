@@ -20,8 +20,8 @@ It will change as the project evolves.
 | Milestone | Version | Status |
 |---|---|---|
 | Command-line vault (learning project) | [v1.0.0](https://github.com/m3xXmo0/password-vault-cli/releases/tag/v1.0.0) | ✅ |
-| Project setup & tooling | – | 🚧 |
-| Secure core | v2.0.0-alpha | 📋 |
+| Project setup & tooling | – | ✅ |
+| Secure core | v2.0.0-alpha | 🚧 |
 | First graphical interface | v2.0.0-beta | 📋 |
 | Polished interface & convenience security | v2.0.0-rc1 | 📋 |
 | Installers & first stable release | v2.0.0 | 📋 |
@@ -41,14 +41,14 @@ Released as [password-vault-cli](https://github.com/m3xXmo0/password-vault-cli).
 - [x] Change master password
 - [x] Unit tests with JUnit 5 and GitHub Actions CI
 
-## 🚧 Project setup & tooling
+## ✅ Project setup & tooling
 
-- [ ] Maven Wrapper (build without installing Maven)
-- [ ] Dependabot for dependency updates
-- [ ] CodeQL code scanning
-- [ ] Clean-up of constants and formatting
+- [x] Maven Wrapper (build without installing Maven)
+- [x] Dependabot for dependency updates
+- [x] CodeQL code scanning
+- [x] Clean-up of constants and formatting
 
-## 📋 v2.0.0-alpha: Secure core
+## 🚧 v2.0.0-alpha: Secure core
 
 Strengthening the foundation before building the GUI.
 
