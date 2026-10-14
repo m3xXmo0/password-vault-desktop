@@ -1,5 +1,11 @@
 # Password Vault
 ![Build](https://github.com/m3xXmo0/password-vault-desktop/actions/workflows/build.yml/badge.svg)
+
+> Weiterentwicklung meines Lernprojekts [password-vault-cli](https://github.com/m3xXmo0/password-vault-cli).
+> Die Entstehungsgeschichte (Commits) und die Konsolen-Version findest du dort.
+>
+> *Continuation of my learning project [password-vault-cli](https://github.com/m3xXmo0/password-vault-cli), where you can find the full commit history and the console version.*
+
 ## Deutsche Version:
 
 Ein Passwort-Tresor für die Kommandozeile (Java-only). 
