@@ -101,6 +101,9 @@ class VaultStorageTest {
         VaultStorage.save(new Vault(), file, "master".toCharArray());
         assertTrue(Files.exists(file));
 
+        VaultStorage.save(new Vault(), file, "master".toCharArray());
+        assertTrue(Files.exists(file));
+
         assertFalse(Files.exists(tempDir.resolve("vault.dat.tmp")));
 
     }
