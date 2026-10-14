@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 .kotlin
 vault.txt
+*.tmp
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

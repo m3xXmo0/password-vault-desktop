@@ -9,6 +9,10 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+
 class VaultStorageTest {
 
     @TempDir
@@ -88,5 +92,16 @@ class VaultStorageTest {
         Vault loaded = VaultStorage.load(file, "master".toCharArray());
 
         assertEquals(1, loaded.getEntries().size());
+    }
+
+    @Test
+    void saveLeavesNoTempFileBehind() throws Exception{
+        Path file = tempDir.resolve("vault.dat");
+
+        VaultStorage.save(new Vault(), file, "master".toCharArray());
+        assertTrue(Files.exists(file));
+
+        assertFalse(Files.exists(tempDir.resolve("vault.dat.tmp")));
+
     }
 }

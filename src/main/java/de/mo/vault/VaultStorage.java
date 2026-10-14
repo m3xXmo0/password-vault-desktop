@@ -5,6 +5,7 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
@@ -36,7 +37,9 @@ public class VaultStorage {
         byte[] result = new byte[salt.length + encrypted.length];
         System.arraycopy(salt, 0, result, 0, salt.length);
         System.arraycopy(encrypted, 0, result, salt.length, encrypted.length);
-        Files.writeString(file, Base64.getEncoder().encodeToString(result));
+        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+        Files.writeString(tmp, Base64.getEncoder().encodeToString(result));
+        Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
