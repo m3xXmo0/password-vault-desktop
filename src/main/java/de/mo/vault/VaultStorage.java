@@ -5,9 +5,13 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -36,7 +40,13 @@ public class VaultStorage {
         byte[] result = new byte[salt.length + encrypted.length];
         System.arraycopy(salt, 0, result, 0, salt.length);
         System.arraycopy(encrypted, 0, result, salt.length, encrypted.length);
-        Files.writeString(file, Base64.getEncoder().encodeToString(result));
+        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+        Files.writeString(tmp, Base64.getEncoder().encodeToString(result));
+        if(Files.exists(file)){
+            Path backup = file.resolveSibling(file.getFileName() + ".bak");
+            Files.copy(file, backup, StandardCopyOption.REPLACE_EXISTING);
+        }
+        Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -44,11 +54,12 @@ public class VaultStorage {
      * Master-Passwort ab und entschlüsselt den Tresor.
      * Existiert die Datei noch nicht, wird ein leerer Tresor zurückgegeben.
      */
-    public static Vault load(Path file, char[] password)
+    public static LoadResult load(Path file, char[] password)
             throws IOException, VaultException {
         Vault vault = new Vault();
+        List<String> warnings = new ArrayList<>();
         if (!Files.exists(file)) {
-            return vault;
+            return new LoadResult(vault, warnings);
         }
         try {
             byte[] data;
@@ -71,8 +82,11 @@ public class VaultStorage {
                     try {
                         vault.add(new Entry(parts[0], parts[1], parts[2]));
                     } catch (IllegalArgumentException e) {
-                        System.out.println("Warnung: Eintrag übersprungen: " + e.getMessage());
+                        warnings.add("Eintrag übersprungen: " + e.getMessage());
                     }
+                }else if (!line.isEmpty()) {
+                    warnings.add("Ungültige Zeile übersprungen (" + parts.length + " statt 3 Felder)");
+
                 }
             }
         } catch (AEADBadTagException e) {
@@ -80,7 +94,7 @@ public class VaultStorage {
         } catch (GeneralSecurityException e) {
             throw new VaultException("Entschlüsselung fehlgeschlagen: " + e.getMessage());
         }
-        return vault;
+        return new LoadResult(vault, warnings);
 
     }
 }

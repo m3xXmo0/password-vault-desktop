@@ -25,7 +25,11 @@ public class Main {
         }
         Vault vault;
         try {
-            vault = VaultStorage.load(file, masterPassword);
+            LoadResult result = VaultStorage.load(file, masterPassword);
+            vault = result.vault();
+            for(String warning : result.warnings()){
+                System.out.println("Warnung: " + warning);
+            }
         } catch (VaultException e) {
             System.out.println("Fehler: " + e.getMessage());
             return;
