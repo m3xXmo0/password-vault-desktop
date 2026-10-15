@@ -10,6 +10,9 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Speichert und lädt den Tresor verschlüsselt
@@ -51,11 +54,12 @@ public class VaultStorage {
      * Master-Passwort ab und entschlüsselt den Tresor.
      * Existiert die Datei noch nicht, wird ein leerer Tresor zurückgegeben.
      */
-    public static Vault load(Path file, char[] password)
+    public static LoadResult load(Path file, char[] password)
             throws IOException, VaultException {
         Vault vault = new Vault();
+        List<String> warnings = new ArrayList<>();
         if (!Files.exists(file)) {
-            return vault;
+            return new LoadResult(vault, warnings);
         }
         try {
             byte[] data;
@@ -78,8 +82,11 @@ public class VaultStorage {
                     try {
                         vault.add(new Entry(parts[0], parts[1], parts[2]));
                     } catch (IllegalArgumentException e) {
-                        System.out.println("Warnung: Eintrag übersprungen: " + e.getMessage());
+                        warnings.add("Eintrag übersprungen: " + e.getMessage());
                     }
+                }else if (!line.isEmpty()) {
+                    warnings.add("Ungültige Zeile übersprungen (" + parts.length + " statt 3 Felder)");
+
                 }
             }
         } catch (AEADBadTagException e) {
@@ -87,7 +94,7 @@ public class VaultStorage {
         } catch (GeneralSecurityException e) {
             throw new VaultException("Entschlüsselung fehlgeschlagen: " + e.getMessage());
         }
-        return vault;
+        return new LoadResult(vault, warnings);
 
     }
 }

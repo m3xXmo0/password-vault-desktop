@@ -12,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import javax.crypto.SecretKey;
+
+
 
 class VaultStorageTest {
 
@@ -26,7 +29,7 @@ class VaultStorageTest {
         vault.add(new Entry("Netflix", "maxi", "pw2"));
 
         VaultStorage.save(vault, file, "master".toCharArray());
-        Vault loaded = VaultStorage.load(file, "master".toCharArray());
+        Vault loaded = VaultStorage.load(file, "master".toCharArray()).vault();
 
         assertEquals(2, loaded.getEntries().size());
         assertEquals("pw2", loaded.findByService("Netflix").getPassword());
@@ -70,7 +73,7 @@ class VaultStorageTest {
     @Test
     void missingFileGivesEmptyVault() throws Exception {
         Path file = tempDir.resolve("gibt-es-nicht.dat");
-        Vault loaded = VaultStorage.load(file, "master".toCharArray());
+        Vault loaded = VaultStorage.load(file, "master".toCharArray()).vault();
         assertEquals(0, loaded.getEntries().size());
     }
 
@@ -89,7 +92,7 @@ class VaultStorageTest {
         vault.add(new Entry("Mail", "mo", ""));
 
         VaultStorage.save(vault, file, "master".toCharArray());
-        Vault loaded = VaultStorage.load(file, "master".toCharArray());
+        Vault loaded = VaultStorage.load(file, "master".toCharArray()).vault();
 
         assertEquals(1, loaded.getEntries().size());
     }
@@ -121,7 +124,44 @@ class VaultStorageTest {
         VaultStorage.save(second, file, "master".toCharArray());
 
         assertTrue(Files.exists(backup));
-        Vault fromBackup = VaultStorage.load(backup, "master".toCharArray());
+        Vault fromBackup = VaultStorage.load(backup, "master".toCharArray()).vault();
         assertEquals("alt", fromBackup.findByService("GitHub").getPassword());
+    }
+
+    @Test
+    void duplicateEntryInFileProducesWarning() throws Exception{
+        Path file = tempDir.resolve("vault.dat");
+
+        // Datei von Hand bauen: Salt + verschl. Text mit doppeltem Dienst
+        byte[] salt = CryptoService.generateSalt();
+        SecretKey key = CryptoService.deriveKey("master".toCharArray(), salt);
+        byte[] encrypted = CryptoService.encrypt("GitHub\tmo\tpw1\ngithub\tmo\tw2\n", key);
+
+        byte[] data = new byte[salt.length + encrypted.length];
+        System.arraycopy(salt, 0, data, 0, salt.length);
+        System.arraycopy(encrypted, 0, data, salt.length, encrypted.length);
+        Files.writeString(file, java.util.Base64.getEncoder().encodeToString(data));
+
+        LoadResult result = VaultStorage.load(file, "master".toCharArray());
+
+        assertEquals(1, result.vault().getEntries().size());
+        assertEquals(1, result.warnings().size());
+    }
+    @Test
+    void malformedLineProducesWarning() throws Exception {
+        Path file = tempDir.resolve("vault.dat");
+
+        byte[] salt = CryptoService.generateSalt();
+        SecretKey key = CryptoService.deriveKey("master".toCharArray(), salt);
+        byte[] encrypted = CryptoService.encrypt("GitHub\tmo\tpw1\tgithub\tmo\tpw2\n", key);
+        byte[] data = new byte[salt.length + encrypted.length];
+        System.arraycopy(salt, 0, data, 0, salt.length);
+        System.arraycopy(encrypted, 0, data, salt.length, encrypted.length);
+        Files.writeString(file, java.util.Base64.getEncoder().encodeToString(data));
+
+        LoadResult result = VaultStorage.load(file, "master".toCharArray());
+
+        assertEquals(0, result.vault().getEntries().size());
+        assertEquals(1, result.warnings().size());
     }
 }
