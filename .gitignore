@@ -5,6 +5,7 @@ target/
 .kotlin
 vault.txt
 *.tmp
+*.bak
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

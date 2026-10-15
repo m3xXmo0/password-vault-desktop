@@ -39,6 +39,10 @@ public class VaultStorage {
         System.arraycopy(encrypted, 0, result, salt.length, encrypted.length);
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
         Files.writeString(tmp, Base64.getEncoder().encodeToString(result));
+        if(Files.exists(file)){
+            Path backup = file.resolveSibling(file.getFileName() + ".bak");
+            Files.copy(file, backup, StandardCopyOption.REPLACE_EXISTING);
+        }
         Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 

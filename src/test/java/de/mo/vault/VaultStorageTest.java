@@ -105,6 +105,23 @@ class VaultStorageTest {
         assertTrue(Files.exists(file));
 
         assertFalse(Files.exists(tempDir.resolve("vault.dat.tmp")));
+    }
 
+    @Test
+    void previousVersionIsKeptAsBackup() throws Exception {
+        Path file = tempDir.resolve("vault.dat");
+        Path backup = tempDir.resolve("vault.dat.bak");
+
+        Vault first = new Vault();
+        first.add(new Entry("GitHub", "mo", "alt"));
+        VaultStorage.save(first, file, "master".toCharArray());
+
+        Vault second = new Vault();
+        second.add(new Entry("GitHub", "mo", "neu"));
+        VaultStorage.save(second, file, "master".toCharArray());
+
+        assertTrue(Files.exists(backup));
+        Vault fromBackup = VaultStorage.load(backup, "master".toCharArray());
+        assertEquals("alt", fromBackup.findByService("GitHub").getPassword());
     }
 }
